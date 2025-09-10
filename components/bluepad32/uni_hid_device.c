@@ -380,14 +380,14 @@ bool uni_hid_device_has_name(const uni_hid_device_t* d) {
     return (d->flags & FLAGS_HAS_NAME) != 0;
 }
 
-void uni_hid_device_set_hid_descriptor(uni_hid_device_t* d, const uint8_t* descriptor, int len) {
+void uni_hid_device_set_hid_descriptor(uni_hid_device_t* d, const uint8_t* descriptor, uint16_t len) {
     if (d == NULL) {
         loge("ERROR: Invalid device\n");
         return;
     }
 
     int min = btstack_min(HID_MAX_DESCRIPTOR_LEN, len);
-    memcpy(d->hid_descriptor, descriptor, len);
+    memcpy(d->hid_descriptor, descriptor, min);
     d->hid_descriptor_len = min;
     d->flags |= FLAGS_HAS_HID_DESCRIPTOR;
 
@@ -812,6 +812,11 @@ void uni_hid_device_send_report(uni_hid_device_t* d, uint16_t cid, const uint8_t
     int err = l2cap_send(cid, (uint8_t*)report, len);
     if (err != 0) {
         logd("Could not send report (error=0x%04x). Adding it to queue\n", err);
+        // uni_circular_buffer_put() takes an int16_t as len.
+        if (len > 32767) {
+            loge("ERROR: outgoing buffer: report is too big %d\n", len);
+            return;
+        }
         if (uni_circular_buffer_put(&d->outgoing_buffer, cid, report, len) != 0) {
             loge("ERROR: circular buffer full. Cannot queue report\n");
         }
@@ -859,7 +864,7 @@ void uni_hid_device_send_queued_reports(uni_hid_device_t* d) {
         loge("ERROR: could not get buffer from circular buffer.\n");
         return;
     }
-    uni_hid_device_send_report(d, cid, data, data_len);
+    uni_hid_device_send_report(d, cid, data, (uint16_t)data_len);
 }
 
 bool uni_hid_device_does_require_hid_descriptor(const uni_hid_device_t* d) {

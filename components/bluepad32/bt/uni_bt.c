@@ -131,17 +131,18 @@ static void stop_scan(void) {
         uni_bt_le_scan_stop();
 }
 
-static void start_scanning(bool enabled) {
-    if (bt_scanning_enabled != enabled) {
-        bt_scanning_enabled = enabled;
+static void update_scanning_state(bool new_state) {
+    if (bt_scanning_enabled == new_state)
+        return;
 
-        if (enabled)
-            start_scan();
-        else
-            stop_scan();
-    }
+    bt_scanning_enabled = new_state;
 
-    uni_get_platform()->on_oob_event(UNI_PLATFORM_OOB_BLUETOOTH_ENABLED, (void*)enabled);
+    if (bt_scanning_enabled)
+        start_scan();
+    else
+        stop_scan();
+
+    uni_get_platform()->on_oob_event(UNI_PLATFORM_OOB_BLUETOOTH_ENABLED, (void*)(uintptr_t)bt_scanning_enabled);
 }
 
 static void on_hci_disconnection_complete(uint16_t channel, const uint8_t* packet, uint16_t size) {
@@ -195,10 +196,10 @@ static void cmd_callback(void* context) {
             bluetooth_list_keys();
             break;
         case CMD_BT_START_SCANNING:
-            start_scanning(true);
+            update_scanning_state(true);
             break;
         case CMD_BT_STOP_SCANNING:
-            start_scanning(false);
+            update_scanning_state(false);
             break;
         case CMD_DUMP_DEVICES:
             uni_hid_device_dump_all();
@@ -283,11 +284,11 @@ void uni_bt_enable_new_connections_unsafe(bool enabled) {
 }
 
 void uni_bt_start_scanning_and_autoconnect_unsafe(void) {
-    start_scanning(true);
+    update_scanning_state(true);
 }
 
 void uni_bt_stop_scanning_unsafe(void) {
-    start_scanning(false);
+    update_scanning_state(false);
 }
 
 bool uni_bt_enable_new_connections_is_enabled(void) {

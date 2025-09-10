@@ -12,8 +12,8 @@
 #define UNI_ENABLE_BREDR 1
 #define UNI_ENABLE_BLE 1
 #elif defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32C3) || \
-    defined(CONFIG_IDF_TARGET_ESP32C6) || defined(CONFIG_IDF_TARGET_ESP32H2)
-// ESP32-S3 / C3 / C6
+    defined(CONFIG_IDF_TARGET_ESP32C5) || defined(CONFIG_IDF_TARGET_ESP32C6) || defined(CONFIG_IDF_TARGET_ESP32H2)
+// ESP32-S3 / C3 / C5 / C6
 #define UNI_ENABLE_BLE 1
 #else
 #error "Unsupported target platform"
