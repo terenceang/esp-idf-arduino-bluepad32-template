@@ -45,13 +45,6 @@ jobs:
         target: esp32c6
         command: "idf.py set-target esp32c6 && idf.py build"
 
-    - name: Arduino build ESP32-H2
-      uses: espressif/esp-idf-ci-action@main
-      with:
-        esp_idf_version: release-v5.5
-        target: esp32h2
-        command: "idf.py set-target esp32h2 && idf.py build"
-
     - name: Arduino build ESP32-C5
       uses: espressif/esp-idf-ci-action@main
       with:
