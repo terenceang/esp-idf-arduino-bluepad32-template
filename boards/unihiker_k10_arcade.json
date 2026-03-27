@@ -1,0 +1,51 @@
+{
+  "build": {
+    "core": "esp32",
+    "extra_flags": [
+      "-DBOARD_HAS_PSRAM"
+    ],
+    "f_cpu": "240000000L",
+    "f_flash": "80000000L",
+    "flash_mode": "qio",
+    "hwids": [
+      [
+        "0x303A",
+        "0x83CF"
+      ],
+      [
+        "0x303A",
+        "0x1001"
+      ]
+    ],
+    "mcu": "esp32s3",
+    "variant": "unihiker_k10"
+  },
+  "connectivity": [
+    "bluetooth",
+    "wifi"
+  ],
+  "debug": {
+    "default_tool": "esp-builtin",
+    "onboard_tools": [
+      "esp-builtin"
+    ],
+    "openocd_target": "esp32s3.cfg"
+  },
+  "frameworks": [
+    "arduino",
+    "espidf"
+  ],
+  "name": "Unihiker K10 Arcade",
+  "platforms": [
+    "espressif32"
+  ],
+  "upload": {
+    "flash_size": "16MB",
+    "maximum_ram_size": 327680,
+    "maximum_size": 16777216,
+    "require_upload_port": true,
+    "speed": 460800
+  },
+  "url": "https://www.dfrobot.com/product-2746.html",
+  "vendor": "DFRobot"
+}

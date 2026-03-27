@@ -2,6 +2,10 @@
 # CMakeLists in this exact order for cmake to work correctly
 cmake_minimum_required(VERSION 3.13)
 
+set(EXCLUDE_COMPONENTS
+	arduino
+	bluepad32_arduino)
+
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 
-project(bluepad32_arduino_app_template)
+project(unihiker_k10_arcade)

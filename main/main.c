@@ -12,25 +12,19 @@
 #include <btstack_stdio_esp32.h>
 
 // Bluepad32 related
-#include <arduino_platform.h>
 #include <uni.h>
 
-//
-// Autostart
-//
-#if CONFIG_AUTOSTART_ARDUINO
-void initBluepad32() {
-#else
-int app_main(void) {
-#endif  // !CONFIG_AUTOSTART_ARDUINO
+#include "k10_bt_gamepad.h"
+
+void app_main(void) {
     // hci_dump_open(NULL, HCI_DUMP_STDOUT);
 
-// Don't use BTstack buffered UART. It conflicts with the console.
-#ifndef CONFIG_ESP_CONSOLE_UART_NONE
+// Only attach BTstack stdio when the active ESP-IDF console is UART.
+#ifdef CONFIG_ESP_CONSOLE_UART
 #ifndef CONFIG_BLUEPAD32_USB_CONSOLE_ENABLE
     btstack_stdio_init();
 #endif  // CONFIG_BLUEPAD32_USB_CONSOLE_ENABLE
-#endif  // CONFIG_ESP_CONSOLE_UART_NONE
+#endif  // CONFIG_ESP_CONSOLE_UART
 
     // Configure BTstack for ESP32 VHCI Controller
     btstack_init();
@@ -38,14 +32,11 @@ int app_main(void) {
     // hci_dump_init(hci_dump_embedded_stdout_get_instance());
 
     // Must be called before uni_init()
-    uni_platform_set_custom(get_arduino_platform());
+    uni_platform_set_custom(k10_get_bluepad_platform());
 
     // Init Bluepad32.
     uni_init(0 /* argc */, NULL /* argv */);
 
     // Does not return.
     btstack_run_loop_execute();
-#if !CONFIG_AUTOSTART_ARDUINO
-    return 0;
-#endif  // !CONFIG_AUTOSTART_ARDUINO
 }

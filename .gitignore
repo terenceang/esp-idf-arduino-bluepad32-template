@@ -3,6 +3,7 @@ sdkconfig.old
 sdkconfig
 
 # misc
+.pio/
 .pioenvs
 .clang_complete
 .gcc-flags.json
@@ -52,6 +53,9 @@ ui_*.h
 
 # Object files
 *.o
+
+# Embedded build artifacts
+*.map
 
 # Vagrant stuff
 .vagrant

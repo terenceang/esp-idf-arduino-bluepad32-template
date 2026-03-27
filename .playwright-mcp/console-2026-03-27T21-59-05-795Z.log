@@ -1,0 +1,2 @@
+[    1368ms] [ERROR] Failed to load resource: net::ERR_CERT_AUTHORITY_INVALID @ https://www.googletagmanager.com/gtag/js?id=:0
+[    2412ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://api.github.com/repos/UNIHIKER/unihiker-docs/releases/latest:0
