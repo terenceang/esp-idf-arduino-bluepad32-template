@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git submodule status)",
+      "Bash(git add components/arduino)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nUpdate arduino submodule to latest version\n\n🤖 Generated with [Claude Code](https://claude.ai/code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git push origin main)",
+      "Bash(git remote set-url origin https://github.com/terenceang/esp-idf-arduino-bluepad32-template.git)",
+      "Bash(git remote set-url origin https://github.com/ricardoquesada/esp-idf-arduino-bluepad32-template.git)",
+      "Bash(git remote add myfork https://github.com/terenceang/esp-idf-arduino-bluepad32-template.git)",
+      "Bash(git push myfork main)",
+      "Bash(git remote remove myfork)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
