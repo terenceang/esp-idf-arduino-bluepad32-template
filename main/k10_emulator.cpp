@@ -50,11 +50,13 @@ namespace {
 
 constexpr uint32_t kFramePixels = 224 * 8;
 constexpr uint32_t kFrameBytes = kFramePixels * sizeof(uint16_t);
+constexpr uint64_t kFramePeriodUs = 16667;
 constexpr uint32_t kEmulationTaskStackWords = 4096;
 constexpr UBaseType_t kEmulationTaskPriority = 2;
 constexpr BaseType_t kEmulationTaskCore = 0;
 
 TaskHandle_t g_emulation_task = nullptr;
+TaskHandle_t g_present_task = nullptr;
 uint16_t* g_frame_buffers[2] = {nullptr, nullptr};
 uint8_t g_buffer_index = 0;
 bool g_runtime_ready = false;
@@ -153,9 +155,14 @@ void update_screen_cpp() {
     static const signed char star_speeds[8] = {-1, -2, -3, 0, 3, 2, 1, 0};
     static uint32_t frame_count = 0;
     static uint32_t last_fps_time = 0;
+    static uint64_t next_frame_deadline_us = 0;
 
     const uint32_t frame_start = static_cast<uint32_t>(k10_micros());
     frame_count++;
+
+    if (g_emulation_task != nullptr) {
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+    }
 
     const uint32_t now = k10_millis();
     if (now - last_fps_time >= 5000) {
@@ -178,15 +185,28 @@ void update_screen_cpp() {
 
     snd_transmit_cpp();
 
-    const unsigned long elapsed_ms = (static_cast<unsigned long>(k10_micros()) - frame_start) / 1000;
-    if (elapsed_ms < 16) {
-        vTaskDelay(16 - elapsed_ms);
-    } else {
-        vTaskDelay(1);
-    }
-
     if (g_emulation_task != nullptr) {
         xTaskNotifyGive(g_emulation_task);
+    }
+
+    const uint64_t now_us = k10_micros();
+    if (next_frame_deadline_us == 0 || now_us > next_frame_deadline_us + kFramePeriodUs) {
+        next_frame_deadline_us = now_us + kFramePeriodUs;
+    } else {
+        while (true) {
+            const uint64_t current_us = k10_micros();
+            if (current_us >= next_frame_deadline_us) {
+                break;
+            }
+
+            const uint64_t remaining_us = next_frame_deadline_us - current_us;
+            if (remaining_us > 2000) {
+                vTaskDelay(pdMS_TO_TICKS((remaining_us - 1000) / 1000));
+            } else {
+                taskYIELD();
+            }
+        }
+        next_frame_deadline_us += kFramePeriodUs;
     }
 
     stars_scroll_y += 2 * star_speeds[starcontrol & 7];
@@ -196,6 +216,9 @@ void emulation_task(void* parameter) {
     (void)parameter;
     while (true) {
         emulate_frame();
+        if (g_present_task != nullptr) {
+            xTaskNotifyGive(g_present_task);
+        }
     }
 }
 
@@ -228,6 +251,8 @@ void teardown_emulation_task() {
         vTaskDelete(g_emulation_task);
         g_emulation_task = nullptr;
     }
+
+    g_present_task = nullptr;
 
     if (memory != nullptr) {
         free(memory);
@@ -277,6 +302,8 @@ bool k10_emulator_start(K10Machine machine) {
     game_started = 0;
     g_cached_buttons = 0;
     g_buffer_index = 0;
+    g_present_task = xTaskGetCurrentTaskHandle();
+    ulTaskNotifyTake(pdTRUE, 0);
 
     prepare_emulation();
 
