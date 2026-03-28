@@ -16,6 +16,7 @@ namespace {
 
 constexpr uint8_t kTftMac = 0x48;
 constexpr int16_t kLogoTop = (K10_TFT_ACTIVE_HEIGHT - 96) / 2;
+constexpr uint16_t kPanelBackground = 0x0000;
 constexpr uint16_t kMenuBackground = 0x0000;
 
 spi_device_handle_t g_tft_handle = nullptr;
@@ -171,6 +172,15 @@ void flush_dma() {
     spi_transaction_t* completed = nullptr;
     spi_device_get_trans_result(g_tft_handle, &completed, portMAX_DELAY);
     g_dma_active = false;
+}
+
+void clear_panel(uint16_t color) {
+    write_gpio(K10_TFT_CS, 0);
+    set_addr_window(0, 0, K10_TFT_WIDTH, K10_TFT_HEIGHT);
+    for (uint32_t index = 0; index < static_cast<uint32_t>(K10_TFT_WIDTH) * K10_TFT_HEIGHT; ++index) {
+        write16(color);
+    }
+    write_gpio(K10_TFT_CS, 1);
 }
 
 uint16_t greyscale(uint16_t input) {
@@ -360,6 +370,8 @@ bool k10_video_begin() {
         send_command(command, cursor, len);
         cursor += len;
     }
+
+    clear_panel(kPanelBackground);
 
     if (!k10_prepare_expander()) {
         printf("Video: expander prepare failed\n");
